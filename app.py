@@ -1,18 +1,26 @@
 import yaml
 import requests
+import pandas as pd
 
-# Cargar configuración desde application.yaml
+
 with open("application.yaml", "r") as file:
     config = yaml.safe_load(file)
 
 base_url = config["base_url"]
 pokemon_list = config["pokemon_list"]
 
-# Recorrer cada Pokémon y mostrar su experiencia base
+data = []
+
 for name in pokemon_list:
-    try:
-        response = requests.get(f"{base_url}{name}")
-        data = response.json()
-        print(f"{name.title()} tiene {data['base_experience']} puntos de experiencia.")
-    except Exception as e:
-        print(f"Error con {name}: {e}")
+    res = requests.get(f"{base_url}{name}")
+    poke = res.json()
+    data.append({
+        "name": name,
+        "base_experience": poke["base_experience"],
+        "weight": poke["weight"],
+        "type": poke["types"][0]["type"]["name"],
+        "ability": poke["abilities"][0]["ability"]["name"]
+    })
+
+df = pd.DataFrame(data)
+print(df.head())
